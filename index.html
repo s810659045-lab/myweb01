@@ -8,23 +8,37 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 200%; /* 스크롤을 위해 높게 설정 */
+            height: 250%; /* 콘텐츠 길이에 맞춰 조정 */
             background: #000;
             overflow-x: hidden;
             font-family: 'Noto Sans KR', sans-serif;
         }
 
-        /* 배경 이미지 설정 */
-        .bg-container {
+        /* 배경 비디오 컨테이너 */
+        .video-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
-                        url('https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?auto=format&fit=crop&w=1920&q=80'); /* 중국 황산 예시 이미지 */
-            background-size: cover;
-            background-position: center;
+            z-index: -3;
+            overflow: hidden;
+        }
+
+        .video-background video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 영상을 화면에 꽉 채움 */
+        }
+
+        /* 영상 위 어두운 오버레이 (글자 가독성 확보) */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
             z-index: -2;
         }
 
@@ -41,22 +55,37 @@
             position: relative;
             color: white;
             text-align: center;
-            padding-top: 40vh;
-            font-size: 3rem;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+            padding-top: 45vh;
+            font-size: 2.5rem;
+            text-shadow: 0px 4px 15px rgba(0,0,0,0.8);
         }
 
         .description {
-            margin-top: 80vh; /* 두 번째 섹션 */
-            font-size: 1.5rem;
-            background: rgba(0,0,0,0.5);
-            padding: 50px;
+            position: relative;
+            margin-top: 100vh;
+            color: white;
+            font-size: 1.3rem;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px); /* 배경 살짝 흐리게 */
+            padding: 80px 20px;
+            text-align: center;
+            line-height: 1.8;
         }
+
+        h1 { margin: 0; font-size: 4rem; letter-spacing: 5px; }
+        p { font-weight: 300; }
     </style>
 </head>
 <body>
 
-    <div class="bg-container"></div>
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="KakaoTalk_20260331_200812123.mp4" type="video/mp4">
+            브라우저가 비디오 태그를 지원하지 않습니다.
+        </video>
+    </div>
+    
+    <div class="overlay"></div>
     <canvas id="particleCanvas"></canvas>
 
     <div class="content">
@@ -65,17 +94,16 @@
     </div>
 
     <div class="description">
-        <h2>천하절경, 장가계</h2>
-        <p>구름 위로 솟은 수만 개의 기암괴석이 당신을 맞이합니다.</p>
+        <h2>천하절경, 장가계 (Zhangjiajie)</h2>
+        <p>영화 '아바타'의 영감이 된 이곳은 구름 위로 솟은 수만 개의 기암괴석이 장관을 이룹니다.<br>
+        자연이 빚어낸 거대한 예술품 사이로 흐르는 안개는 마치 신선이 사는 듯한 신비로움을 선사합니다.</p>
     </div>
 
     <script>
         const canvas = document.getElementById('particleCanvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        let scrollY = 0;
 
-        // 캔버스 크기 조정
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -83,28 +111,22 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 입자(Particle) 클래스
         class Particle {
             constructor() {
+                this.init();
+            }
+            init() {
                 this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 3 + 1;
-                this.speedY = Math.random() * 1 + 0.5;
-                this.opacity = Math.random() * 0.5 + 0.2;
+                this.y = Math.random() * canvas.height + canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * 1 + 0.3;
+                this.opacity = Math.random() * 0.6 + 0.1;
             }
-
             update() {
-                // 스크롤 속도에 반응하여 입자 이동 속도 가속
-                let speedMultiplier = 1 + (window.scrollY * 0.005);
+                let speedMultiplier = 1 + (window.scrollY * 0.003);
                 this.y -= this.speedY * speedMultiplier;
-
-                // 화면 위로 사라지면 아래에서 다시 생성
-                if (this.y < 0) {
-                    this.y = canvas.height;
-                    this.x = Math.random() * canvas.width;
-                }
+                if (this.y < -10) this.init();
             }
-
             draw() {
                 ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
                 ctx.beginPath();
@@ -114,7 +136,7 @@
         }
 
         function init() {
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 120; i++) {
                 particles.push(new Particle());
             }
         }
