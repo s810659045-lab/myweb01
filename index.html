@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>중국 경관 소개 - 인터랙티브 페이지</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 200%; /* 스크롤을 위해 높게 설정 */
+            background: #000;
+            overflow-x: hidden;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        /* 배경 이미지 설정 */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                        url('https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?auto=format&fit=crop&w=1920&q=80'); /* 중국 황산 예시 이미지 */
+            background-size: cover;
+            background-position: center;
+            z-index: -2;
+        }
+
+        /* 입자 애니메이션 캔버스 */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .content {
+            position: relative;
+            color: white;
+            text-align: center;
+            padding-top: 40vh;
+            font-size: 3rem;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+        }
+
+        .description {
+            margin-top: 80vh; /* 두 번째 섹션 */
+            font-size: 1.5rem;
+            background: rgba(0,0,0,0.5);
+            padding: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-container"></div>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="content">
+        <h1>중국의 비경(祕境)</h1>
+        <p>스크롤을 내려 신비로운 풍경을 탐험하세요</p>
+    </div>
+
+    <div class="description">
+        <h2>천하절경, 장가계</h2>
+        <p>구름 위로 솟은 수만 개의 기암괴석이 당신을 맞이합니다.</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let scrollY = 0;
+
+        // 캔버스 크기 조정
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 입자(Particle) 클래스
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 1 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                // 스크롤 속도에 반응하여 입자 이동 속도 가속
+                let speedMultiplier = 1 + (window.scrollY * 0.005);
+                this.y -= this.speedY * speedMultiplier;
+
+                // 화면 위로 사라지면 아래에서 다시 생성
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
